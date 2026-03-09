@@ -4,7 +4,7 @@
 
 Successfully implemented the foundational data layer for the BookVisually financial tracking system.
 
-**Total Tests:** 107 tests, 0 failures ✓
+**Total Tests:** 143 tests, 0 failures ✓
 
 ---
 
@@ -19,21 +19,6 @@ Successfully implemented the foundational data layer for the BookVisually financ
 - **Subscription** - Recurring services with expiry management (e.g., internet plans, software)
 - **Utility** - Bills and services with consumption tracking (e.g., water, electricity, rent)
 
-**Key Features:**
-- 1:1 relationship pattern (resource → properties)
-- Soft delete support
-- Category-specific validations
-- Cached status fields for performance
-- Transaction-safe combined creation
-
-**Files:**
-- `lib/bookvisually/resources.ex` - Context module
-- `lib/bookvisually/resources/resource.ex` - Base schema
-- `lib/bookvisually/resources/supply_resource_properties.ex`
-- `lib/bookvisually/resources/asset_resource_properties.ex`
-- `lib/bookvisually/resources/subscription_resource_properties.ex`
-- `lib/bookvisually/resources/utility_resource_properties.ex`
-
 **Tests:** 66 tests ✓
 
 ---
@@ -46,18 +31,6 @@ Successfully implemented the foundational data layer for the BookVisually financ
 - `bank_account` - Bank accounts (requires bank_name)
 - `funding_line` - Investment/funding accounts
 
-**Key Features:**
-- Cached balances (current_balance, total_cash_in, total_cash_out)
-- Status management (active, closed, frozen)
-- Balance increase/decrease operations
-- Total balance calculation across accounts
-- Soft delete support
-- Type and status filtering
-
-**Files:**
-- `lib/bookvisually/accounts.ex` - Context module
-- `lib/bookvisually/accounts/financial_account.ex` - Schema
-
 **Tests:** 25 tests ✓
 
 ---
@@ -69,22 +42,49 @@ Successfully implemented the foundational data layer for the BookVisually financ
 - Links to resources and financial accounts
 - Automatic total calculation (unit_cost × quantity)
 - Date-based filtering and reporting
-- Resource-specific expense tracking
-- Soft delete support
-- Metadata fields (payment_method, reference_number)
-
-**Functions:**
-- `create_expense/1` - Auto-calculates total if unit_cost and quantity provided
-- `list_expenses_by_resource/1` - Filter by resource
-- `list_expenses_by_date_range/2` - Filter by date range
-- `get_total_for_resource/1` - Sum expenses for a resource
-- `get_total_for_date_range/2` - Sum expenses in date range
-
-**Files:**
-- `lib/bookvisually/expenses.ex` - Context module
-- `lib/bookvisually/expenses/expense.ex` - Schema
 
 **Tests:** 16 tests ✓
+
+---
+
+### 4. Account Transactions Module ✓
+**Purpose:** Track money movements between accounts
+
+**Transaction Types:**
+- `deposit` - Money coming in
+- `withdrawal` - Money going out
+- `transfer` - Between accounts
+- `expense` - Payment for expenses
+- `income` - Revenue received
+- `adjustment` - Balance corrections
+
+**Key Features:**
+- Automatic balance updates
+- Transaction rollback on failures
+- Database-level constraints
+
+**Tests:** 17 tests ✓
+
+---
+
+### 5. Supply Stock Movements Module ✓
+**Purpose:** Track inventory changes for supply resources
+
+**Movement Types:**
+- `purchase` - Stock increase (can link to expense)
+- `usage` - Stock decrease (tracks who used it)
+- `adjustment` - Stock corrections (positive or negative)
+- `disposal` - Stock removal
+- `return` - Stock increase from returns
+
+**Key Features:**
+- Automatic stock level updates
+- Status updates (in_stock, low_stock, out_of_stock)
+- Transaction-safe operations
+- Usage tracking with "used_by" field
+- Prevents negative stock
+
+**Tests:** 19 tests ✓
 
 ---
 
@@ -97,6 +97,8 @@ Successfully implemented the foundational data layer for the BookVisually financ
 5. `20260308202517_create_utility_resource_properties.exs`
 6. `20260309033555_create_financial_accounts.exs`
 7. `20260309034117_create_expenses.exs`
+8. `20260309035139_create_account_transactions.exs`
+9. `20260309041300_create_supply_stock_movements.exs`
 
 ---
 

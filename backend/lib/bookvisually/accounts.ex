@@ -7,6 +7,7 @@ defmodule BookVisually.Accounts do
   import Ecto.Query, warn: false
   alias BookVisually.Repo
   alias BookVisually.Accounts.FinancialAccount
+  alias BookVisually.Accounts.AccountTransaction
 
   @doc """
   Returns the list of active financial accounts.
@@ -212,5 +213,171 @@ defmodule BookVisually.Accounts do
       nil -> Decimal.new("0")
       total -> total
     end
+  end
+
+  @doc """
+  Calculates the total balance across all active accounts.
+  Alias for get_total_balance/0.
+  """
+  def calculate_total_balance, do: get_total_balance()
+
+  @doc """
+  Creates an adjustment transaction (positive or negative balance adjustment).
+  """
+  def create_adjustment(attrs) do
+    Repo.transaction(fn ->
+      with {:ok, transaction} <- create_transaction(Map.put(attrs, :transaction_type, "adjustment")),
+           {:ok, _account} <- apply_adjustment(transaction) do
+        transaction
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  defp apply_adjustment(transaction) do
+    cond do
+      transaction.from_account_id ->
+        decrease_balance_by_id(transaction.from_account_id, transaction.amount)
+
+      transaction.to_account_id ->
+        increase_balance_by_id(transaction.to_account_id, transaction.amount)
+
+      true ->
+        {:error, :invalid_adjustment}
+    end
+  end
+
+  @doc """
+  Returns transactions for a specific account.
+  Alias for list_transactions_by_account/1.
+  """
+  def list_transactions_for_account(account_id), do: list_transactions_by_account(account_id)
+
+  # Account Transactions
+
+  @doc """
+  Returns the list of transactions.
+  """
+  def list_transactions do
+    AccountTransaction
+    |> AccountTransaction.order_by_date_desc()
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns transactions for a specific account.
+  """
+  def list_transactions_by_account(account_id) do
+    AccountTransaction
+    |> AccountTransaction.by_account(account_id)
+    |> AccountTransaction.order_by_date_desc()
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns transactions within a date range.
+  """
+  def list_transactions_by_date_range(start_date, end_date) do
+    AccountTransaction
+    |> AccountTransaction.by_date_range(start_date, end_date)
+    |> AccountTransaction.order_by_date_desc()
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets a single transaction.
+  """
+  def get_transaction!(id) do
+    Repo.get!(AccountTransaction, id)
+  end
+
+  @doc """
+  Creates a deposit transaction and updates account balance.
+  """
+  def create_deposit(attrs) do
+    Repo.transaction(fn ->
+      with {:ok, transaction} <- create_transaction(Map.put(attrs, :transaction_type, "deposit")),
+           {:ok, _account} <- increase_balance_by_id(transaction.to_account_id, transaction.amount) do
+        transaction
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  @doc """
+  Creates a withdrawal transaction and updates account balance.
+  """
+  def create_withdrawal(attrs) do
+    Repo.transaction(fn ->
+      with {:ok, transaction} <- create_transaction(Map.put(attrs, :transaction_type, "withdrawal")),
+           {:ok, _account} <- decrease_balance_by_id(transaction.from_account_id, transaction.amount) do
+        transaction
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  @doc """
+  Creates a transfer transaction and updates both account balances.
+  """
+  def create_transfer(attrs) do
+    Repo.transaction(fn ->
+      with {:ok, transaction} <- create_transaction(Map.put(attrs, :transaction_type, "transfer")),
+           {:ok, _from} <- decrease_balance_by_id(transaction.from_account_id, transaction.amount),
+           {:ok, _to} <- increase_balance_by_id(transaction.to_account_id, transaction.amount) do
+        transaction
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  @doc """
+  Creates an expense payment transaction and updates account balance.
+  """
+  def create_expense_payment(attrs) do
+    Repo.transaction(fn ->
+      with {:ok, transaction} <- create_transaction(Map.put(attrs, :transaction_type, "expense")),
+           {:ok, _account} <- decrease_balance_by_id(transaction.from_account_id, transaction.amount) do
+        transaction
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  @doc """
+  Creates an income transaction and updates account balance.
+  """
+  def create_income(attrs) do
+    Repo.transaction(fn ->
+      with {:ok, transaction} <- create_transaction(Map.put(attrs, :transaction_type, "income")),
+           {:ok, _account} <- increase_balance_by_id(transaction.to_account_id, transaction.amount) do
+        transaction
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  # Private helper functions
+
+  defp create_transaction(attrs) do
+    %AccountTransaction{}
+    |> AccountTransaction.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp increase_balance_by_id(account_id, amount) do
+    account = Repo.get!(FinancialAccount, account_id)
+    increase_balance(account, amount)
+  end
+
+  defp decrease_balance_by_id(account_id, amount) do
+    account = Repo.get!(FinancialAccount, account_id)
+    decrease_balance(account, amount)
   end
 end
