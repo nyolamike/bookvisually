@@ -26,6 +26,16 @@ defmodule BookVisually.Resources.Resource do
     field :is_deleted, :boolean, default: false
     field :deleted_at, :utc_datetime
 
+    # Associations
+    has_one :supply_properties, BookVisually.Resources.SupplyResourceProperties,
+      foreign_key: :resource_id
+    has_one :asset_properties, BookVisually.Resources.AssetResourceProperties,
+      foreign_key: :resource_id
+    has_one :subscription_properties, BookVisually.Resources.SubscriptionResourceProperties,
+      foreign_key: :resource_id
+    has_one :utility_properties, BookVisually.Resources.UtilityResourceProperties,
+      foreign_key: :resource_id
+
     timestamps(type: :utc_datetime)
   end
 
