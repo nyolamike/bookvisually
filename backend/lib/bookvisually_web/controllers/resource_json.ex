@@ -52,7 +52,7 @@ defmodule BookVisuallyWeb.ResourceJSON do
           current_stock_quantity: props.current_stock_quantity,
           out_of_stock_alert_quantity: props.out_of_stock_alert_quantity,
           issues_out_of_stock_alerts: props.issues_out_of_stock_alerts,
-          stock_status: props.stock_status
+          stock_status: props.status
         })
     end
   end

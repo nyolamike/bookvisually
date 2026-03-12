@@ -60,6 +60,11 @@ defmodule BookVisuallyWeb.ResourceController do
     end
   end
 
+  # Fallback for direct params (without "resource" wrapper)
+  def create(conn, params) when is_map(params) do
+    create(conn, %{"resource" => params})
+  end
+
   def show(conn, %{"id" => id}) do
     resource = Resources.get_resource!(id)
     render(conn, :show, resource: resource)

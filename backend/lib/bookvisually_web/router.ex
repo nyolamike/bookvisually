@@ -47,5 +47,12 @@ defmodule BookVisuallyWeb.Router do
     post "/bills/:id/pay", BillController, :pay
     get "/bills/overdue", BillController, :overdue
     get "/bills/upcoming", BillController, :upcoming
+
+    # Canvas State
+    get "/canvas", CanvasController, :index
+    get "/canvas/:name", CanvasController, :show
+    post "/canvas", CanvasController, :create
+    patch "/canvas/:id/nodes", CanvasController, :update_nodes
+    delete "/canvas/:id", CanvasController, :delete
   end
 end

@@ -73,7 +73,7 @@ defmodule BookVisuallyWeb.DashboardController do
       case resource.supply_properties do
         %Ecto.Association.NotLoaded{} -> false
         nil -> false
-        props -> props.stock_status in ["low_stock", "out_of_stock"]
+        props -> props.status in ["low_stock", "out_of_stock"]
       end
     end)
   end

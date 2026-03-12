@@ -20,6 +20,11 @@ defmodule BookVisuallyWeb.AccountController do
     end
   end
 
+  # Fallback for direct params (without "account" wrapper)
+  def create(conn, params) when is_map(params) do
+    create(conn, %{"account" => params})
+  end
+
   def show(conn, %{"id" => id}) do
     account = Accounts.get_account!(id)
     render(conn, :show, account: account)

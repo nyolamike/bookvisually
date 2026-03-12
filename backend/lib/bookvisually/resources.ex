@@ -24,6 +24,7 @@ defmodule BookVisually.Resources do
   def list_resources do
     Resource.active()
     |> Repo.all()
+    |> Repo.preload([:supply_properties, :asset_properties, :subscription_properties, :utility_properties])
   end
 
   @doc """
@@ -39,6 +40,7 @@ defmodule BookVisually.Resources do
     Resource.active()
     |> Resource.by_category(category)
     |> Repo.all()
+    |> Repo.preload([:supply_properties, :asset_properties, :subscription_properties, :utility_properties])
   end
 
   @doc """
